@@ -89,6 +89,10 @@ PrepareResult prepare_statement(InputBuffer *input_buffer, Statement *stmt)
   if (strncmp(input_buffer->buffer, "insert", 6) == 0)
   {
     stmt->type = STATMENT_INSERT;
+    int args_assigned = sscanf(input_buffer->buffer, "insert %d %s %s", &(stmt->row_to_insert.id), stmt->row_to_insert.username, stmt->row_to_insert.email);
+    if (args_assigned < 3) {
+      return PREPARE_SYNTAX_ERROR;
+    }
     return PREPARE_SUCCESS;
   }
   if (strcmp(input_buffer->buffer, "select") == 0)
@@ -110,4 +114,16 @@ void execute_statement(Statement *stmt)
     printf("This is where we would do an insert.\n");
     break;
   }
+}
+
+void serialize_row(Row *source, void *dest) {
+  memcpy(dest + ID_OFFSET, &(source->id), ID_SIZE);
+  memcpy(dest + USERNAME_OFFSET, &(source->username), USERNAME_SIZE);
+  memcpy(dest + EMAIL_OFFSET, &(source->email), EMAIL_SIZE);
+}
+
+void deserialize_row(void *source, Row *dest) {
+  memcpy(&(dest->id), source + ID_OFFSET, ID_SIZE);
+  memcpy(&(dest->username), source + USERNAME_OFFSET, USERNAME_SIZE);
+  memcpy(&(dest->email), source + EMAIL_OFFSET, EMAIL_SIZE);
 }
