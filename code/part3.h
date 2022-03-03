@@ -55,6 +55,8 @@ const uint32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
 void serialize_row(Row *source, void *dest);
 void deserialize_row(void *source, Row *dest);
 
+void print_row(Row *row);
+
 const uint32_t PAGE_SIZE = 4096;
 #define TABLE_MAX_PAGES 100
 const uint32_t ROWS_PER_PAGE = PAGE_SIZE / ROW_SIZE;
@@ -65,6 +67,11 @@ typedef struct {
   void *page[TABLE_MAX_PAGES];
 } Table;
 
+Table *new_table();
+void free_table(Table *table);
+
+void *row_slot(Table *table, uint32_t row_num);
+
 typedef struct
 {
   StatementType type;
@@ -73,4 +80,11 @@ typedef struct
 
 PrepareResult prepare_statement(InputBuffer *input_buffer, Statement *stmt);
 
-void execute_statement(Statement *stmt);
+typedef enum {
+  EXECUTE_TABLE_FULL,
+  EXECUTE_SUCCESS
+} ExecuteResult;
+
+ExecuteResult execute_insert(Statement *stmt, Table *table);
+ExecuteResult execute_select(Statement *stmt, Table *table);
+ExecuteResult execute_statement(Statement *stmt, Table *table);
